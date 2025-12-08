@@ -6,12 +6,16 @@ interface StacDocument {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("Ready to automatically validate STAC via json-schema");
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    100
+  );
+  context.subscriptions.push(statusBarItem);
 
   const documentChangeDisposable = vscode.workspace.onDidChangeTextDocument(
     (event) => {
       if (event.document.languageId === "json") {
-        updateJsonSchemaForDocument(event.document);
+        processStacDocument(event.document, statusBarItem);
       }
     }
   );
@@ -19,25 +23,48 @@ export function activate(context: vscode.ExtensionContext) {
   const documentOpenDisposable = vscode.workspace.onDidOpenTextDocument(
     (document) => {
       if (document.languageId === "json") {
-        updateJsonSchemaForDocument(document);
+        processStacDocument(document, statusBarItem);
+      }
+    }
+  );
+
+  const activeEditorDisposable = vscode.window.onDidChangeActiveTextEditor(
+    (editor) => {
+      if (editor && editor.document.languageId === "json") {
+        processStacDocument(editor.document, statusBarItem);
+      } else {
+        statusBarItem.hide();
       }
     }
   );
 
   vscode.workspace.textDocuments.forEach((document) => {
     if (document.languageId === "json") {
-      updateJsonSchemaForDocument(document);
+      processStacDocument(document, statusBarItem);
     }
   });
 
-  context.subscriptions.push(documentChangeDisposable, documentOpenDisposable);
+  // Update status bar for currently active editor
+  if (vscode.window.activeTextEditor) {
+    processStacDocument(vscode.window.activeTextEditor.document, statusBarItem);
+  }
+
+  context.subscriptions.push(
+    documentChangeDisposable,
+    documentOpenDisposable,
+    activeEditorDisposable
+  );
 }
 
-function updateJsonSchemaForDocument(document: vscode.TextDocument): void {
+function processStacDocument(
+  document: vscode.TextDocument,
+  statusBarItem: vscode.StatusBarItem
+): void {
   const config = vscode.workspace.getConfiguration("stacJsonSchema");
   const enabled = config.get<boolean>("enable", true);
 
   if (!enabled) {
+    statusBarItem.hide();
     return;
   }
 
@@ -45,35 +72,44 @@ function updateJsonSchemaForDocument(document: vscode.TextDocument): void {
     const text = document.getText();
 
     if (!text.includes('"stac_version"')) {
+      statusBarItem.hide();
       return;
     }
 
     const jsonData: StacDocument = JSON.parse(text);
 
-    if (!jsonData.stac_version) {
+    if (!jsonData.stac_version || !jsonData.type) {
+      statusBarItem.hide();
       return;
     }
 
-    const stacType = jsonData.type?.toLowerCase() || "unknown";
-    const schemaUrl = getSchemaUrl(jsonData.stac_version, stacType);
-
+    // Update JSON schema
+    const jsonType = jsonData.type.toLowerCase();
+    const schemaUrl = getSchemaUrl(jsonData.stac_version, jsonType);
     if (schemaUrl) {
       applySchemaToDocument(document, schemaUrl);
     }
+
+    // Update status bar
+    const stacType = jsonData.type === "Feature" ? "Item" : jsonData.type;
+    statusBarItem.text = `STAC ${stacType} v${jsonData.stac_version}`;
+    statusBarItem.show();
   } catch (error) {
     console.debug("Failed to parse JSON document:", error);
+    statusBarItem.hide();
   }
 }
 
-function getSchemaUrl(stacVersion: string, stacType: string): string | null {
-  return `https://schemas.stacspec.org/v${stacVersion}/${stacType}/schema.json`;
+function getSchemaUrl(stacVersion: string, jsonType: string): string | null {
+  const stacType = jsonType === "feature" ? "item" : jsonType;
+  return `https://schemas.stacspec.org/v${stacVersion}/${stacType}-spec/json-schema/${stacType}.json`;
 }
 
 function applySchemaToDocument(
   document: vscode.TextDocument,
   schemaUrl: string
 ): void {
-  const config = vscode.workspace.getConfiguration("json");
+  const config = vscode.workspace.getConfiguration("json", null);
   const schemas = config.get<Array<any>>("schemas", []);
 
   const documentUri = document.uri.toString();
