@@ -5,13 +5,6 @@ interface StacDocument {
   type?: string;
 }
 
-interface SchemaUrls {
-  collection: string;
-  item: string;
-  catalog: string;
-  [key: string]: string;
-}
-
 export function activate(context: vscode.ExtensionContext) {
   console.log("Ready to automatically validate STAC via json-schema");
 
