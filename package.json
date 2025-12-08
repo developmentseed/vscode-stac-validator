@@ -3,6 +3,12 @@
   "displayName": "vscode-stac-json-schema",
   "description": "Automatically validate SpatioTemporal Asset Catalog (STAC) JSON files",
   "version": "0.0.1",
+  "publisher": "developmentseed",
+  "repository": {
+    "url": "https://github.com/developmentseed/vscode-stac-json-schema"
+  },
+  "license": "MIT",
+  "icon": "img/STAC-04.png",
   "engines": {
     "vscode": "^1.106.1"
   },
@@ -39,13 +45,14 @@
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@types/vscode": "^1.106.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
-    "typescript-eslint": "^8.48.1",
+    "@types/vscode": "^1.106.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.27.1",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.48.1"
   }
 }
