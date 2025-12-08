@@ -1,6 +1,6 @@
 {
   "name": "vscode-stac-json-schema",
-  "displayName": "vscode-stac-json-schema",
+  "displayName": "STAC JSON Schema Validator",
   "description": "Automatically validate SpatioTemporal Asset Catalog (STAC) JSON files",
   "author": {
     "name": "Pete Gadomski",
