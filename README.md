@@ -1,4 +1,4 @@
-# vscode-stac-json-schema
+# STAC Json Schema Validator
 
 A Visual Studio Code extension that automatically configures JSON schema validation for [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) JSON.
 
