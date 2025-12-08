@@ -13,6 +13,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@v2.0.6
+        id: app-token
+        with:
+          app-id: ${{ secrets.DS_RELEASE_BOT_ID }}
+          private-key: ${{ secrets.DS_RELEASE_BOT_PRIVATE_KEY }}
       - uses: googleapis/release-please-action@v4
         with:
           skip-github-release: true
+          token: ${{ steps.app-token.outputs.token }}
