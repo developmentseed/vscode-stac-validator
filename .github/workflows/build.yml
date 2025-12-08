@@ -20,13 +20,3 @@ jobs:
         run: yarn run lint
       - name: Compile TypeScript
         run: yarn run compile
-      - name: Package extension
-        run: |
-          yarn global add @vscode/vsce
-          vsce package
-      - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vscode-stac-json-schema-${{ github.sha }}
-          path: "*.vsix"
-          retention-days: 30
