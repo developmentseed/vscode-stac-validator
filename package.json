@@ -2,6 +2,10 @@
   "name": "vscode-stac-json-schema",
   "displayName": "vscode-stac-json-schema",
   "description": "Automatically validate SpatioTemporal Asset Catalog (STAC) JSON files",
+  "author": {
+    "name": "Pete Gadomski",
+    "email": "pete.gadomski@gmail.com"
+  },
   "version": "0.0.1",
   "publisher": "developmentseed",
   "repository": {
