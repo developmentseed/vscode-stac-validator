@@ -8,7 +8,7 @@ interface StacDocument {
 export function activate(context: vscode.ExtensionContext) {
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    100
+    100,
   );
   context.subscriptions.push(statusBarItem);
 
@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (event.document.languageId === "json") {
         processStacDocument(event.document, statusBarItem);
       }
-    }
+    },
   );
 
   const documentOpenDisposable = vscode.workspace.onDidOpenTextDocument(
@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (document.languageId === "json") {
         processStacDocument(document, statusBarItem);
       }
-    }
+    },
   );
 
   const activeEditorDisposable = vscode.window.onDidChangeActiveTextEditor(
@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
       } else {
         statusBarItem.hide();
       }
-    }
+    },
   );
 
   vscode.workspace.textDocuments.forEach((document) => {
@@ -44,7 +44,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // Update status bar for currently active editor
   if (vscode.window.activeTextEditor) {
     processStacDocument(vscode.window.activeTextEditor.document, statusBarItem);
   }
@@ -52,15 +51,15 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     documentChangeDisposable,
     documentOpenDisposable,
-    activeEditorDisposable
+    activeEditorDisposable,
   );
 }
 
 function processStacDocument(
   document: vscode.TextDocument,
-  statusBarItem: vscode.StatusBarItem
+  statusBarItem: vscode.StatusBarItem,
 ): void {
-  const config = vscode.workspace.getConfiguration("stacJsonSchema");
+  const config = vscode.workspace.getConfiguration("stacValidator");
   const enabled = config.get<boolean>("enable", true);
 
   if (!enabled) {
@@ -83,14 +82,12 @@ function processStacDocument(
       return;
     }
 
-    // Update JSON schema
     const jsonType = jsonData.type.toLowerCase();
     const schemaUrl = getSchemaUrl(jsonData.stac_version, jsonType);
     if (schemaUrl) {
       applySchemaToDocument(document, schemaUrl);
     }
 
-    // Update status bar
     const stacType = jsonData.type === "Feature" ? "Item" : jsonData.type;
     statusBarItem.text = `STAC ${stacType} v${jsonData.stac_version}`;
     statusBarItem.show();
@@ -107,23 +104,24 @@ function getSchemaUrl(stacVersion: string, jsonType: string): string | null {
 
 function applySchemaToDocument(
   document: vscode.TextDocument,
-  schemaUrl: string
+  schemaUrl: string,
 ): void {
   const config = vscode.workspace.getConfiguration("json", null);
   const schemas = config.get<Array<any>>("schemas", []);
 
-  const documentUri = document.uri.toString();
+  const relativePath = vscode.workspace.asRelativePath(document.uri, false);
+
   const existingSchemaIndex = schemas.findIndex((schema) => {
     if (schema.fileMatch) {
       return schema.fileMatch.some(
-        (pattern: string) => pattern === documentUri
+        (pattern: string) => pattern === relativePath,
       );
     }
     return false;
   });
 
   const newSchemaEntry = {
-    fileMatch: [documentUri],
+    fileMatch: [relativePath],
     url: schemaUrl,
   };
 
@@ -142,7 +140,7 @@ function applySchemaToDocument(
   config.update(
     "schemas",
     updatedSchemas,
-    vscode.ConfigurationTarget.Workspace
+    vscode.ConfigurationTarget.Workspace,
   );
 
   console.log(`Applied STAC schema to ${document.fileName}: ${schemaUrl}`);
