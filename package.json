@@ -7,30 +7,41 @@
     "vscode": "^1.106.1"
   },
   "categories": [
-    "Other"
+    "Linters"
   ],
-  "activationEvents": [],
+  "keywords": [
+    "stac",
+    "json-schema",
+    "validation",
+    "geospatial"
+  ],
+  "activationEvents": [
+    "onLanguage:json"
+  ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "vscode-stac-json-schema.helloWorld",
-        "title": "Hello World"
+    "configuration": {
+      "title": "STAC JSON Schema Validator",
+      "properties": {
+        "stacJsonSchema.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic STAC JSON schema validation"
+        }
       }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "eslint src"
   },
   "devDependencies": {
     "@types/vscode": "^1.106.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
+    "@types/node": "24.x",
     "typescript-eslint": "^8.48.1",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",

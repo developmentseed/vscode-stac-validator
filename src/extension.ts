@@ -1,26 +1,122 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-stac-json-schema" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-stac-json-schema.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-stac-json-schema!');
-	});
-
-	context.subscriptions.push(disposable);
+interface StacDocument {
+  stac_version?: string;
+  type?: string;
 }
 
-// This method is called when your extension is deactivated
+interface SchemaUrls {
+  collection: string;
+  item: string;
+  catalog: string;
+  [key: string]: string;
+}
+
+export function activate(context: vscode.ExtensionContext) {
+  console.log("Ready to automatically validate STAC via json-schema");
+
+  const documentChangeDisposable = vscode.workspace.onDidChangeTextDocument(
+    (event) => {
+      if (event.document.languageId === "json") {
+        updateJsonSchemaForDocument(event.document);
+      }
+    }
+  );
+
+  const documentOpenDisposable = vscode.workspace.onDidOpenTextDocument(
+    (document) => {
+      if (document.languageId === "json") {
+        updateJsonSchemaForDocument(document);
+      }
+    }
+  );
+
+  vscode.workspace.textDocuments.forEach((document) => {
+    if (document.languageId === "json") {
+      updateJsonSchemaForDocument(document);
+    }
+  });
+
+  context.subscriptions.push(documentChangeDisposable, documentOpenDisposable);
+}
+
+function updateJsonSchemaForDocument(document: vscode.TextDocument): void {
+  const config = vscode.workspace.getConfiguration("stacJsonSchema");
+  const enabled = config.get<boolean>("enable", true);
+
+  if (!enabled) {
+    return;
+  }
+
+  try {
+    const text = document.getText();
+
+    if (!text.includes('"stac_version"')) {
+      return;
+    }
+
+    const jsonData: StacDocument = JSON.parse(text);
+
+    if (!jsonData.stac_version) {
+      return;
+    }
+
+    const stacType = jsonData.type?.toLowerCase() || "unknown";
+    const schemaUrl = getSchemaUrl(jsonData.stac_version, stacType);
+
+    if (schemaUrl) {
+      applySchemaToDocument(document, schemaUrl);
+    }
+  } catch (error) {
+    console.debug("Failed to parse JSON document:", error);
+  }
+}
+
+function getSchemaUrl(stacVersion: string, stacType: string): string | null {
+  return `https://schemas.stacspec.org/v${stacVersion}/${stacType}/schema.json`;
+}
+
+function applySchemaToDocument(
+  document: vscode.TextDocument,
+  schemaUrl: string
+): void {
+  const config = vscode.workspace.getConfiguration("json");
+  const schemas = config.get<Array<any>>("schemas", []);
+
+  const documentUri = document.uri.toString();
+  const existingSchemaIndex = schemas.findIndex((schema) => {
+    if (schema.fileMatch) {
+      return schema.fileMatch.some(
+        (pattern: string) => pattern === documentUri
+      );
+    }
+    return false;
+  });
+
+  const newSchemaEntry = {
+    fileMatch: [documentUri],
+    url: schemaUrl,
+  };
+
+  let updatedSchemas: Array<any>;
+  if (existingSchemaIndex >= 0) {
+    if (schemas[existingSchemaIndex].url !== schemaUrl) {
+      updatedSchemas = [...schemas];
+      updatedSchemas[existingSchemaIndex] = newSchemaEntry;
+    } else {
+      return;
+    }
+  } else {
+    updatedSchemas = [...schemas, newSchemaEntry];
+  }
+
+  config.update(
+    "schemas",
+    updatedSchemas,
+    vscode.ConfigurationTarget.Workspace
+  );
+
+  console.log(`Applied STAC schema to ${document.fileName}: ${schemaUrl}`);
+}
+
 export function deactivate() {}
