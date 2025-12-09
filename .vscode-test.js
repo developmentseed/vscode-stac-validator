@@ -7,9 +7,7 @@ module.exports = defineConfig({
     ui: "tdd",
     timeout: 20000,
   },
-  useInstallation: {
-    fromPath: process.env.VSCODE_TEST_VERSION || "stable",
-  },
+  version: process.env.VSCODE_TEST_VERSION || "stable",
   launchArgs: ["--disable-extensions", "--disable-gpu"],
   env: {
     DISPLAY: ":99.0",
