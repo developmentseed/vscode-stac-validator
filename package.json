@@ -1,5 +1,5 @@
 {
-  "name": "vscode-stac-json-schema",
+  "name": "vscode-stac-validator",
   "displayName": "STAC Validator",
   "description": "Automatically validate SpatioTemporal Asset Catalog (STAC) JSON files",
   "author": {
