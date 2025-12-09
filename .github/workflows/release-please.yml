@@ -20,6 +20,8 @@ jobs:
           cache: "yarn"
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+      - name: Test
+        run: yarn test
       - name: Compile and package extension
         run: |
           yarn global add @vscode/vsce
