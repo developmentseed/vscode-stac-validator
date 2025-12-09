@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/developmentseed/vscode-stac-validator/compare/vscode-stac-json-schema-v0.0.3...vscode-stac-json-schema-v0.0.4) (2025-12-09)
+
+
+### Bug Fixes
+
+* use local paths, add tests ([#4](https://github.com/developmentseed/vscode-stac-validator/issues/4)) ([7b65025](https://github.com/developmentseed/vscode-stac-validator/commit/7b6502517a390cf00b9da85be528f50b18744a9a))
+
 ## [0.0.3](https://github.com/developmentseed/vscode-stac-json-schema/compare/vscode-stac-json-schema-v0.0.2...vscode-stac-json-schema-v0.0.3) (2025-12-08)
 
 
