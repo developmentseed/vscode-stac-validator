@@ -5,19 +5,42 @@ interface StacDocument {
   type?: string;
 }
 
+let currentSchemaUrls: string[] = [];
+
 export function activate(context: vscode.ExtensionContext) {
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    100,
+    100
   );
+  statusBarItem.command = "stacValidator.showSchemas";
   context.subscriptions.push(statusBarItem);
+
+  const showSchemasCommand = vscode.commands.registerCommand(
+    "stacValidator.showSchemas",
+    () => {
+      if (currentSchemaUrls.length === 0) {
+        vscode.window.showInformationMessage("No STAC schemas applied");
+        return;
+      }
+
+      const items = currentSchemaUrls.map((url) => ({
+        label: url,
+        detail: url.includes("https://schemas.stacspec.org") ? "Core" : "Extension",
+      }));
+
+      vscode.window.showQuickPick(items, {
+        placeHolder: "Applied STAC schemas",
+        canPickMany: false,
+      });
+    }
+  );
 
   const documentChangeDisposable = vscode.workspace.onDidChangeTextDocument(
     (event) => {
       if (event.document.languageId === "json") {
         processStacDocument(event.document, statusBarItem);
       }
-    },
+    }
   );
 
   const documentOpenDisposable = vscode.workspace.onDidOpenTextDocument(
@@ -25,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (document.languageId === "json") {
         processStacDocument(document, statusBarItem);
       }
-    },
+    }
   );
 
   const activeEditorDisposable = vscode.window.onDidChangeActiveTextEditor(
@@ -34,8 +57,9 @@ export function activate(context: vscode.ExtensionContext) {
         processStacDocument(editor.document, statusBarItem);
       } else {
         statusBarItem.hide();
+        currentSchemaUrls = [];
       }
-    },
+    }
   );
 
   vscode.workspace.textDocuments.forEach((document) => {
@@ -49,23 +73,19 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   context.subscriptions.push(
+    showSchemasCommand,
     documentChangeDisposable,
     documentOpenDisposable,
-    activeEditorDisposable,
+    activeEditorDisposable
   );
 }
 
 function processStacDocument(
   document: vscode.TextDocument,
-  statusBarItem: vscode.StatusBarItem,
+  statusBarItem: vscode.StatusBarItem
 ): void {
   const config = vscode.workspace.getConfiguration("stacValidator");
-  const enabled = config.get<boolean>("enable", true);
-
-  if (!enabled) {
-    statusBarItem.hide();
-    return;
-  }
+  const validateExtensions = config.get<boolean>("validateExtensions", true);
 
   try {
     const text = document.getText();
@@ -85,15 +105,25 @@ function processStacDocument(
     const jsonType = jsonData.type.toLowerCase();
     const schemaUrl = getSchemaUrl(jsonData.stac_version, jsonType);
     if (schemaUrl) {
-      applySchemaToDocument(document, schemaUrl);
+      let schemaUrls = [schemaUrl];
+      if (validateExtensions) {
+        const extensions = (jsonData as any).stac_extensions;
+        if (Array.isArray(extensions)) {
+          schemaUrls = [...schemaUrls, ...extensions];
+        }
+      }
+      applySchemasToDocument(document, schemaUrls);
+      currentSchemaUrls = schemaUrls;
     }
 
     const stacType = jsonData.type === "Feature" ? "Item" : jsonData.type;
     statusBarItem.text = `STAC ${stacType} v${jsonData.stac_version}`;
+    statusBarItem.tooltip = "Click to view applied schemas";
     statusBarItem.show();
   } catch (error) {
     console.debug("Failed to parse JSON document:", error);
     statusBarItem.hide();
+    currentSchemaUrls = [];
   }
 }
 
@@ -102,48 +132,35 @@ function getSchemaUrl(stacVersion: string, jsonType: string): string | null {
   return `https://schemas.stacspec.org/v${stacVersion}/${stacType}-spec/json-schema/${stacType}.json`;
 }
 
-function applySchemaToDocument(
+function applySchemasToDocument(
   document: vscode.TextDocument,
-  schemaUrl: string,
+  schemaUrls: string[]
 ): void {
   const config = vscode.workspace.getConfiguration("json", null);
   const schemas = config.get<Array<any>>("schemas", []);
-
   const relativePath = vscode.workspace.asRelativePath(document.uri, false);
 
-  const existingSchemaIndex = schemas.findIndex((schema) => {
-    if (schema.fileMatch) {
-      return schema.fileMatch.some(
-        (pattern: string) => pattern === relativePath,
-      );
-    }
-    return false;
+  const updatedSchemas = schemas.filter((entry) => {
+    return !entry.fileMatch.includes(relativePath);
   });
 
-  const newSchemaEntry = {
-    fileMatch: [relativePath],
-    url: schemaUrl,
-  };
-
-  let updatedSchemas: Array<any>;
-  if (existingSchemaIndex >= 0) {
-    if (schemas[existingSchemaIndex].url !== schemaUrl) {
-      updatedSchemas = [...schemas];
-      updatedSchemas[existingSchemaIndex] = newSchemaEntry;
-    } else {
-      return;
-    }
-  } else {
-    updatedSchemas = [...schemas, newSchemaEntry];
+  for (const schemaUrl of schemaUrls) {
+    const newSchemaEntry = {
+      fileMatch: [relativePath],
+      url: schemaUrl,
+    };
+    updatedSchemas.push(newSchemaEntry);
   }
 
   config.update(
     "schemas",
     updatedSchemas,
-    vscode.ConfigurationTarget.Workspace,
+    vscode.ConfigurationTarget.Workspace
   );
 
-  console.log(`Applied STAC schema to ${document.fileName}: ${schemaUrl}`);
+  console.log(
+    `Applied JSON schema(s) to ${document.fileName}: ${schemaUrls.join(", ")}`
+  );
 }
 
 export function deactivate() {}

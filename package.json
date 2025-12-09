@@ -30,13 +30,19 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "stacValidator.showSchemas",
+        "title": "Show STAC Schemas"
+      }
+    ],
     "configuration": {
       "title": "STAC JSON Schema Validator",
       "properties": {
-        "stacJsonSchema.enable": {
+        "stacValidator.validateExtensions": {
           "type": "boolean",
           "default": true,
-          "description": "Enable automatic STAC JSON schema validation"
+          "description": "Validate extension schemas"
         }
       }
     }
