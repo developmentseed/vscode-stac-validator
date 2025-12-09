@@ -46,6 +46,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
+    "test": "vscode-test",
     "lint": "eslint src"
   },
   "devDependencies": {
