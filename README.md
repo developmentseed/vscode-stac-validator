@@ -2,6 +2,8 @@
 
 A Visual Studio Code extension that automatically configures JSON schema validation for [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) JSON.
 
+![Screenshot](./img/screenshot.png)
+
 ## How it works
 
 This extension automatically validates your STAC JSON files against their corresponding JSON schemas.
