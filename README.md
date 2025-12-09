@@ -1,5 +1,8 @@
 # Visual Studio Code STAC Validator
 
+[![CI](https://img.shields.io/github/actions/workflow/status/developmentseed/vscode-stac-json-schema/ci.yml?branch=main&style=for-the-badge)](https://github.com/developmentseed/vscode-stac-json-schema/actions/workflows/ci.yml)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/developmentseed.vscode-stac-validator?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=developmentseed.vscode-stac-validator)
+
 A Visual Studio Code extension that automatically configures JSON schema validation for [STAC (SpatioTemporal Asset Catalog)](https://stacspec.org/) JSON.
 
 ![GIF in action](./img/vscode-stac-validator.gif)
