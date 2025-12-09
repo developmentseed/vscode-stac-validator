@@ -6,7 +6,7 @@
     "name": "Pete Gadomski",
     "email": "pete.gadomski@gmail.com"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "developmentseed",
   "repository": {
     "url": "https://github.com/developmentseed/vscode-stac-json-schema"

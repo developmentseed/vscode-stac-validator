@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.5](https://github.com/developmentseed/vscode-stac-validator/compare/vscode-stac-validator-v0.0.4...vscode-stac-validator-v0.0.5) (2025-12-09)
+
+
+### Features
+
+* add extensions ([#12](https://github.com/developmentseed/vscode-stac-validator/issues/12)) ([3deddc9](https://github.com/developmentseed/vscode-stac-validator/commit/3deddc9da7d9e806721726a90a4fa751451b7adb))
+
+
+### Bug Fixes
+
+* run tests in ci ([#10](https://github.com/developmentseed/vscode-stac-validator/issues/10)) ([f45bd37](https://github.com/developmentseed/vscode-stac-validator/commit/f45bd372b29ae5efecb846172cf1c82c12c4359c))
+
 ## 0.0.4 (2025-12-09)
 
 
