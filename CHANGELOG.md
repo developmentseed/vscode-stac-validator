@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/developmentseed/vscode-stac-validator/compare/vscode-stac-validator-v0.0.5...vscode-stac-validator-v0.0.6) (2026-04-20)
+
+
+### Bug Fixes
+
+* separate out github actions steps ([#21](https://github.com/developmentseed/vscode-stac-validator/issues/21)) ([9b61c42](https://github.com/developmentseed/vscode-stac-validator/commit/9b61c4295274aa4c8780561ceefdbc55e0d571ae))
+
 ## [0.0.5](https://github.com/developmentseed/vscode-stac-validator/compare/vscode-stac-validator-v0.0.4...vscode-stac-validator-v0.0.5) (2025-12-09)
 
 
